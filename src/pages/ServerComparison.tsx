@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { ArrowLeft, Plus, Trash2, TrendingUp, Users, Zap } from "lucide-react";
 import { Server } from "@/src/types";
-import { truncate, cn } from "@/src/lib/utils";
+import { truncate, cn, getApiUrl } from "@/src/lib/utils";
 
 interface ServerComparisonProps {
   onBack: () => void;
@@ -16,7 +16,7 @@ export default function ServerComparison({ onBack }: ServerComparisonProps) {
   React.useEffect(() => {
     const fetchServers = async () => {
       try {
-        const res = await fetch("/api/servers");
+        const res = await fetch(getApiUrl("/api/servers"));
         const servers = await res.json();
         setAvailableServers(servers);
       } catch (err) {

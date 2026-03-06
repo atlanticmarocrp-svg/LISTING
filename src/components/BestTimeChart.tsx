@@ -2,7 +2,7 @@ import React from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { motion } from "motion/react";
 import { TrendingUp, Clock, Users } from "lucide-react";
-import { cn } from "@/src/lib/utils";
+import { cn, getApiUrl } from "@/src/lib/utils";
 
 interface HourlyData {
   minute: number;
@@ -26,7 +26,7 @@ export default function BestTimeChart({ cfxId, serverName }: BestTimeChartProps)
   React.useEffect(() => {
     const fetchPredictions = async () => {
       try {
-        const res = await fetch(`/api/servers/${cfxId}/predictions`);
+        const res = await fetch(getApiUrl(`/api/servers/${cfxId}/predictions`));
         const data = await res.json();
 
         // Transform data for charts - 1440 points for 24h (every minute)

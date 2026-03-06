@@ -4,7 +4,7 @@ import { ArrowLeft, Users, Globe, MessageSquare, Play, Shield, Terminal, Star, H
 import { motion, AnimatePresence } from "motion/react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { FiveMServerData, Analytics, Server, Comment } from "@/src/types";
-import { cleanFiveMName, cn, truncate, regionCodeToFlag } from "@/src/lib/utils";
+import { cleanFiveMName, cn, truncate, regionCodeToFlag, getApiUrl } from "@/src/lib/utils";
 
 interface ServerDetailsProps {
   cfxId: string;
@@ -43,13 +43,13 @@ export default function ServerDetails({ cfxId, onBack, settings, userToken, onUs
   const fetchDetails = async () => {
     try {
       const cleanId = cfxId.trim().toLowerCase();
-      const res = await fetch(`/api/servers/${cleanId}`);
+      const res = await fetch(getApiUrl(`/api/servers/${cleanId}`));
       const json = await res.json();
       setData(json);
       console.log(`[Polling] Refreshed data for ${cfxId} at ${new Date().toLocaleTimeString()}`);
 
       if (userToken) {
-        const starsRes = await fetch("/api/user/stars", {
+        const starsRes = await fetch(getApiUrl("/api/user/stars"), {
           headers: { "Authorization": `Bearer ${userToken}` }
         });
         const stars = await starsRes.json();
@@ -71,7 +71,7 @@ export default function ServerDetails({ cfxId, onBack, settings, userToken, onUs
     if (isStarred) return; // Cannot unstar
 
     try {
-      const res = await fetch(`/api/servers/${cfxId}/star`, {
+      const res = await fetch(getApiUrl(`/api/servers/${cfxId}/star`), {
         method: "POST",
         headers: { "Authorization": `Bearer ${userToken}` }
       });
@@ -148,7 +148,7 @@ export default function ServerDetails({ cfxId, onBack, settings, userToken, onUs
     const cleanId = cfxId.trim().toLowerCase();
     setIsPosting(true);
     try {
-      const res = await fetch(`/api/servers/${cleanId}/comments`, {
+      const res = await fetch(getApiUrl(`/api/servers/${cleanId}/comments`), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -176,7 +176,7 @@ export default function ServerDetails({ cfxId, onBack, settings, userToken, onUs
     const isLiked = likedComments.includes(commentId);
 
     try {
-      const res = await fetch(`/api/comments/${commentId}/like`, {
+      const res = await fetch(getApiUrl(`/api/comments/${commentId}/like`), {
         method: isLiked ? "DELETE" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userIdentifier })

@@ -1,7 +1,7 @@
 import React from "react";
 import { MessageSquare, Send, Clock, CheckCircle, AlertCircle, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { cn } from "@/src/lib/utils";
+import { cn, getApiUrl } from "@/src/lib/utils";
 
 interface Ticket {
   id: number;
@@ -28,7 +28,7 @@ export default function Support({ userToken, onUserLogin }: SupportProps) {
     if (!userToken) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/user/tickets", {
+      const res = await fetch(getApiUrl("/api/user/tickets"), {
         headers: { "Authorization": `Bearer ${userToken}` }
       });
       const data = await res.json();
@@ -50,7 +50,7 @@ export default function Support({ userToken, onUserLogin }: SupportProps) {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/tickets", {
+      const res = await fetch(getApiUrl("/api/tickets"), {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

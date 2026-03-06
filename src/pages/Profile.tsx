@@ -3,7 +3,7 @@ import { User, Star, MessageSquare, Award, Bell, Trash2, ExternalLink } from "lu
 import { motion, AnimatePresence } from "motion/react";
 import { Server, Comment } from "@/src/types";
 import ServerCard from "@/src/components/ServerCard";
-import { truncate, cn } from "@/src/lib/utils";
+import { truncate, cn, getApiUrl } from "@/src/lib/utils";
 
 interface Notification {
   id: number;
@@ -30,9 +30,9 @@ export default function Profile({ token, onServerClick }: ProfileProps) {
     if (!token) return;
     try {
       const [profileRes, commentsRes, notificationsRes] = await Promise.all([
-        fetch("/api/user/profile", { headers: { "Authorization": `Bearer ${token}` } }),
-        fetch("/api/user/comments", { headers: { "Authorization": `Bearer ${token}` } }),
-        fetch("/api/user/notifications", { headers: { "Authorization": `Bearer ${token}` } })
+        fetch(getApiUrl("/api/user/profile"), { headers: { "Authorization": `Bearer ${token}` } }),
+        fetch(getApiUrl("/api/user/comments"), { headers: { "Authorization": `Bearer ${token}` } }),
+        fetch(getApiUrl("/api/user/notifications"), { headers: { "Authorization": `Bearer ${token}` } })
       ]);
 
       const profile = await profileRes.json();
@@ -56,7 +56,7 @@ export default function Profile({ token, onServerClick }: ProfileProps) {
   const markNotificationsRead = async () => {
     if (!token) return;
     try {
-      await fetch("/api/user/notifications/read", {
+      await fetch(getApiUrl("/api/user/notifications/read"), {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` }
       });

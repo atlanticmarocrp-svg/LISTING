@@ -7,7 +7,7 @@ import AdvancedFilters from "@/src/components/AdvancedFilters";
 import ServerCard from "@/src/components/ServerCard";
 import ServerListItem from "@/src/components/ServerListItem";
 import { Server, Stats, Comment } from "@/src/types";
-import { truncate, regionCodeToFlag, regionFlagUrl, regionCodeFromString } from "@/src/lib/utils";
+import { truncate, regionCodeToFlag, regionFlagUrl, regionCodeFromString, getApiUrl } from "@/src/lib/utils";
 
 interface HomeProps {
   onServerClick: (cfxId: string) => void;
@@ -58,10 +58,10 @@ export default function Home({ onServerClick, settings }: HomeProps) {
     const fetchData = async () => {
       try {
         const [serversRes, statsRes, commentsRes, topStarredRes] = await Promise.all([
-          fetch("/api/servers"),
-          fetch("/api/stats"),
-          fetch("/api/comments/recent"),
-          fetch("/api/stats/top-starred")
+          fetch(getApiUrl("/api/servers")),
+          fetch(getApiUrl("/api/stats")),
+          fetch(getApiUrl("/api/comments/recent")),
+          fetch(getApiUrl("/api/stats/top-starred"))
         ]);
 
         const serversData = await serversRes.json();

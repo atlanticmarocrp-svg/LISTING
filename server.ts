@@ -580,6 +580,52 @@ app.get("/api/servers/:cfxId/comments", async (req, res) => {
   res.json(data || []);
 });
 
+app.get("/api/servers/:cfxId/predictions", async (req, res) => {
+  const cfxId = req.params.cfxId.trim().toLowerCase();
+
+  // Get minute-based analytics (1440 points for 24h)
+  const { data: recentData } = await supabase
+    .from("analytics")
+    .select("players, timestamp")
+    .eq("cfx_id", cfxId)
+    .order("timestamp", { ascending: false })
+    .limit(1440); // Last 1440 minutes = 24 hours
+
+  const minuteAgg: any = {};
+  if (recentData && recentData.length > 0) {
+    recentData.forEach((point: any) => {
+      const date = new Date(point.timestamp);
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const timeKey = `${hours}:${minutes}`;
+      
+      if (!minuteAgg[timeKey]) {
+        minuteAgg[timeKey] = { players: [], count: 0 };
+      }
+      minuteAgg[timeKey].players.push(point.players);
+      minuteAgg[timeKey].count += 1;
+    });
+  }
+
+  // Generate 1440 points for 24 hours (every minute)
+  const result = [];
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m++) {
+      const timeKey = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      const data = minuteAgg[timeKey];
+      
+      result.push({
+        minute_of_day: h * 60 + m,
+        time: timeKey,
+        avg_players: data ? Math.round(data.players.reduce((a: number, b: number) => a + b, 0) / data.count) : 0,
+        peak_players: data ? Math.max(...data.players) : 0
+      });
+    }
+  }
+
+  res.json(result);
+});
+
 app.post("/api/tickets", authMiddleware, async (req: any, res) => {
   const { subject, message } = req.body;
   const { data, error } = await supabase.from("tickets").insert([{
@@ -609,6 +655,90 @@ app.get("/api/stats", async (req, res) => {
   res.json({ totalPlayers, serverCount: servers?.length || 0 });
 });
 
+// SERVER COLLECTIONS
+app.get("/api/user/collections", authMiddleware, async (req: any, res) => {
+  const { data, error } = await supabase
+    .from("server_collections")
+    .select("*")
+    .eq("user_id", req.user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+app.post("/api/user/collections", authMiddleware, async (req: any, res) => {
+  const { name, description } = req.body;
+  const { data, error } = await supabase
+    .from("server_collections")
+    .insert([{
+      user_id: req.user.id,
+      name,
+      description,
+      servers_ids: [],
+      is_shared: false
+    }])
+    .select()
+    .single();
+
+  if (error) return res.status(400).json({ error: error.message });
+  res.json(data);
+});
+
+app.patch("/api/user/collections/:id", authMiddleware, async (req: any, res) => {
+  const { id } = req.params;
+  const { name, description, servers_ids } = req.body;
+
+  const { data, error } = await supabase
+    .from("server_collections")
+    .update({
+      name,
+      description,
+      servers_ids,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", id)
+    .eq("user_id", req.user.id)
+    .select()
+    .single();
+
+  if (error) return res.status(400).json({ error: error.message });
+  res.json(data);
+});
+
+app.delete("/api/user/collections/:id", authMiddleware, async (req: any, res) => {
+  const { error } = await supabase
+    .from("server_collections")
+    .delete()
+    .eq("id", req.params.id)
+    .eq("user_id", req.user.id);
+
+  if (error) return res.status(400).json({ error: error.message });
+  res.json({ success: true });
+});
+
+app.patch("/api/user/collections/:id/share", authMiddleware, async (req: any, res) => {
+  const { id } = req.params;
+  const { is_shared } = req.body;
+  const crypto = require("crypto");
+  const shared_token = is_shared ? crypto.randomBytes(16).toString("hex") : null;
+
+  const { data, error } = await supabase
+    .from("server_collections")
+    .update({
+      is_shared,
+      shared_token,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", id)
+    .eq("user_id", req.user.id)
+    .select()
+    .single();
+
+  if (error) return res.status(400).json({ error: error.message });
+  res.json(data);
+});
+
 // Vite Integration
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
@@ -624,7 +754,7 @@ async function startServer() {
     });
   }
 
-  const PORT = 3000;
+  const PORT = parseInt(process.env.PORT || "3000", 10);
   server.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });

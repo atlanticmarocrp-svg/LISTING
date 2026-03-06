@@ -2,7 +2,7 @@ import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Trash2, Share2, Lock, Unlock, Edit2, Save } from "lucide-react";
 import { ServerCollection } from "@/src/types";
-import { cn } from "@/src/lib/utils";
+import { cn, getApiUrl } from "@/src/lib/utils";
 
 interface ServerCollectionsProps {
   token: string | null;
@@ -20,7 +20,7 @@ export default function ServerCollections({ token }: ServerCollectionsProps) {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/user/collections", {
+      const res = await fetch(getApiUrl("/api/user/collections"), {
         headers: { "Authorization": `Bearer ${token}` }
       });
       const data = await res.json();
@@ -40,7 +40,7 @@ export default function ServerCollections({ token }: ServerCollectionsProps) {
     if (!newCollectionName.trim() || !token) return;
 
     try {
-      const res = await fetch("/api/user/collections", {
+      const res = await fetch(getApiUrl("/api/user/collections"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -67,7 +67,7 @@ export default function ServerCollections({ token }: ServerCollectionsProps) {
     if (!confirm("Delete this collection?") || !token) return;
 
     try {
-      await fetch(`/api/user/collections/${collectionId}`, {
+      await fetch(getApiUrl(`/api/user/collections/${collectionId}`), {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -81,7 +81,7 @@ export default function ServerCollections({ token }: ServerCollectionsProps) {
     if (!token) return;
 
     try {
-      await fetch(`/api/user/collections/${collectionId}/share`, {
+      await fetch(getApiUrl(`/api/user/collections/${collectionId}/share`), {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

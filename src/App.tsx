@@ -11,7 +11,7 @@ import Profile from "@/src/pages/Profile";
 import Logo from "@/src/components/Logo";
 import LoginModal from "@/src/components/LoginModal";
 import { Bell, X } from "lucide-react";
-import { cn } from "@/src/lib/utils";
+import { cn, getApiUrl } from "@/src/lib/utils";
 
 interface Toast {
   id: number;
@@ -51,13 +51,13 @@ export default function App() {
   }, [token]);
 
   React.useEffect(() => {
-    fetch("/api/settings")
+    fetch(getApiUrl("/api/settings"))
       .then(res => res.json())
       .then(data => setSettings(data))
       .catch(err => console.error("Failed to fetch settings:", err));
 
     if (token) {
-      fetch("/api/user/profile", {
+      fetch(getApiUrl("/api/user/profile"), {
         headers: { "Authorization": `Bearer ${token}` }
       })
         .then(res => res.json())

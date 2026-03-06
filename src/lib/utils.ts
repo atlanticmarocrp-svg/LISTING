@@ -66,3 +66,17 @@ export function regionCodeFromString(region?: string, locale?: string): string |
   }
   return code;
 }
+
+// Get API base URL from environment variable or use localhost fallback for development
+export function getApiBaseUrl(): string {
+  // In production (Vercel), VITE_BACKEND_URL will be set to the Railway URL
+  // In development, it defaults to localhost:3000
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+  return backendUrl.endsWith('/') ? backendUrl.slice(0, -1) : backendUrl;
+}
+
+// Helper function to construct full API URLs
+export function getApiUrl(path: string): string {
+  const baseUrl = getApiBaseUrl();
+  return `${baseUrl}${path.startsWith('/') ? path : '/' + path}`;
+}

@@ -3,7 +3,7 @@ import { supabase } from "@/src/lib/supabase";
 import { BarChart3, TrendingUp, Users, Calendar, Star, Trophy, Medal } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { motion, AnimatePresence } from "motion/react";
-import { cn, truncate } from "@/src/lib/utils";
+import { cn, truncate, getApiUrl } from "@/src/lib/utils";
 
 export default function GlobalStats() {
   const [data, setData] = React.useState<{ day: string; players: number }[]>([]);
@@ -22,7 +22,7 @@ export default function GlobalStats() {
       setRefreshingDominant(true);
     }
     try {
-      const res = await fetch(`/api/stats/dominant-servers?period=${period}`);
+      const res = await fetch(getApiUrl(`/api/stats/dominant-servers?period=${period}`));
       const data = await res.json();
       setDominantServers(data);
     } catch (err) {
@@ -40,9 +40,9 @@ export default function GlobalStats() {
     const fetchStats = async () => {
       try {
         const [historyRes, realtimeRes, topStarredRes] = await Promise.all([
-          fetch("/api/stats/global-history"),
-          fetch("/api/stats"),
-          fetch("/api/stats/top-starred")
+          fetch(getApiUrl("/api/stats/global-history")),
+          fetch(getApiUrl("/api/stats")),
+          fetch(getApiUrl("/api/stats/top-starred"))
         ]);
         const historyJson = await historyRes.json();
         const realtimeJson = await realtimeRes.json();

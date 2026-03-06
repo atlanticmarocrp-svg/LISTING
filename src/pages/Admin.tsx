@@ -2,7 +2,7 @@ import React from "react";
 import { Plus, Trash2, RefreshCw, LogOut, LayoutDashboard, Server as ServerIcon, Users, Edit2, Eye, EyeOff, X, Save, TrendingUp, Star, Ticket, Shield, MessageSquare, CheckCircle, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Server, Stats } from "@/src/types";
-import { truncate, cn } from "@/src/lib/utils";
+import { truncate, cn, getApiUrl } from "@/src/lib/utils";
 
 interface User {
   id: number;
@@ -68,11 +68,11 @@ export default function Admin({ token, onLogin, onLogout, onViewServer }: AdminP
     if (!token) return;
     try {
       const [sRes, stRes, setRes, uRes, tRes] = await Promise.all([
-        fetch("/api/servers"),
-        fetch("/api/stats"),
-        fetch("/api/settings"),
-        fetch("/api/admin/users", { headers: { "Authorization": `Bearer ${token}` } }),
-        fetch("/api/admin/tickets", { headers: { "Authorization": `Bearer ${token}` } })
+        fetch(getApiUrl("/api/servers")),
+        fetch(getApiUrl("/api/stats")),
+        fetch(getApiUrl("/api/settings")),
+        fetch(getApiUrl("/api/admin/users"), { headers: { "Authorization": `Bearer ${token}` } }),
+        fetch(getApiUrl("/api/admin/tickets"), { headers: { "Authorization": `Bearer ${token}` } })
       ]);
       setServers(await sRes.json());
       setStats(await stRes.json());
